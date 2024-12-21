@@ -1,9 +1,9 @@
 #include <stdio.h>
-#include <winsock2.h> // windows işletim sistemi içi ağ programlaması
-#include <windows.h> // windows api fonksiyonlarına erişim sağlar
+#include <winsock2.h> 
+#include <windows.h> 
 #include <string.h>  
 
-#pragma comment(lib, "ws2_32.lib")  // winsock kütüphanesine bağlanmasını söyler
+#pragma comment(lib, "ws2_32.lib")  
 
 #define PORT 8080
 #define BUFFER_SIZE 1024
@@ -21,13 +21,13 @@ const char *weather_data[7] = {
 
 
 void handle_client(SOCKET client_socket) {
-    char buffer[BUFFER_SIZE];   // istemciden gelen mesajları tutar
+    char buffer[BUFFER_SIZE];   
     char response[BUFFER_SIZE];
 
     while (1) {
         memset(buffer, 0, BUFFER_SIZE);
 
-        int recv_len = recv(client_socket, buffer, BUFFER_SIZE, 0);  // istemciden veri alır
+        int recv_len = recv(client_socket, buffer, BUFFER_SIZE, 0);  
         if (recv_len <= 0) {
             printf("Client disconnected.\n");
             break;
@@ -36,7 +36,7 @@ void handle_client(SOCKET client_socket) {
         printf("Client: %s\n", buffer);
 
         
-        int day = atoi(buffer);    // gelen mesajları tam sayıya çevirir
+        int day = atoi(buffer);    
         if (day >= 1 && day <= 7) {
             snprintf(response, BUFFER_SIZE, " %d Numarali Gunun Hava Durumu : %s", day, weather_data[day - 1]);
         } else {
@@ -44,10 +44,10 @@ void handle_client(SOCKET client_socket) {
         }
 
         
-        send(client_socket, response, strlen(response), 0);   // istemciye yanıt gönderir
+        send(client_socket, response, strlen(response), 0);   
     }
 
-    closesocket(client_socket);   //istemciyle olan bağlantıyı kapatır
+    closesocket(client_socket);   
 }
 
 int main() {
@@ -56,13 +56,13 @@ int main() {
     struct sockaddr_in server_addr, client_addr;
     int addr_len = sizeof(client_addr);
 
-   //winsock kütüphanesini başlatır
+   
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
         printf("WSAStartup failed. Error Code: %d\n", WSAGetLastError());
         return 1;
     }
 
-    //IPv4 protokolü ve socket oluşturma
+    
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server_socket == INVALID_SOCKET) {
         printf("Socket creation failed. Error Code: %d\n", WSAGetLastError());
@@ -74,20 +74,17 @@ int main() {
     server_addr.sin_addr.s_addr = INADDR_ANY;
     server_addr.sin_port = htons(PORT);
 
-    // socket bağlama bind socketi
-    // belirli bir port ve IP adresine bağlar
-    //server_addr sunucun Ip adresi
+    
     if (bind(server_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) == SOCKET_ERROR) {
         printf("Bind failed. Error Code: %d\n", WSAGetLastError());
         return 1;
     }
 
-   // dinleme ve maksimum bekleyen istemci sayısı
+  
     listen(server_socket, 3);
     printf("Server is listening on port %d...\n", PORT);
 
-    //istemci kabul etme 
-    //accept bir istemci bağlantısnı kabul edeer ve bir istemci soketi döner
+    
     while (1) {
         client_socket = accept(server_socket, (struct sockaddr*)&client_addr, &addr_len);
         if (client_socket == INVALID_SOCKET) {
@@ -96,9 +93,7 @@ int main() {
         }
 
         printf("Client connected.\n");
-
-        // createThread her istemci için bir iş parçacığı oluşturur
-        // Handle_client iş parçacığı istemciyi işlemek için bu fonksiyonu çalıştırır
+        
         DWORD thread_id;
         CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)handle_client, (LPVOID)client_socket, 0, &thread_id);
     }
